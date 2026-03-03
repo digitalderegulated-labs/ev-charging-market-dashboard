@@ -1,57 +1,65 @@
 # ⚡ US EV Charging Infrastructure Intelligence Dashboard
 
-**Live dashboard:** https://ev-charging-market-dashboard.streamlit.app/
+🔗 **Live Application:**  
+https://ev-charging-market-dashboard.streamlit.app/
 
-A public, interactive dashboard that pulls **live U.S. EV charging infrastructure data** from the U.S. Department of Energy’s **AFDC (NREL) Alternative Fuel Stations API** and turns it into a clean, explorable market view.
+An interactive analytics dashboard built on live U.S. EV charging infrastructure data from the U.S. Department of Energy’s AFDC (NREL) API.
 
-This project demonstrates how raw federal infrastructure data can be transformed into a **production-ready analytics product** — from API ingestion and normalization to interactive visualization and deployment.
-
----
-
-## What it shows (plain English)
-
-- **Total EV charging locations (U.S.)** and how widely they’re distributed across states  
-- **Top states** by charging infrastructure concentration  
-- **Charging power mix** (Level 2 vs DC Fast) to compare “everyday charging” vs “road-trip charging”  
-- **Network landscape** (top providers by station count)  
-- **State drill-down** (pick any state to see key stats)  
-- **Map view (optional)** for geographic distribution  
-- **Downloadable dataset** based on the filters you choose
+This project demonstrates how public infrastructure data can be ingested, normalized, and transformed into a clean, deployable analytics product.
 
 ---
 
-## Why it’s useful
+## What the dashboard provides
 
-This project balances public clarity with professional-grade implementation:
-
-- **Live API data ingestion** (NREL/AFDC)  
-- **Data cleaning + normalization** (consistent column handling across API outputs)  
-- **Interactive exploration** (filters, drilldowns, state-level views)  
-- **Insight-oriented visualization** (not just charts — market-relevant framing)  
-- **Production deployment** on Streamlit Community Cloud
-
----
-
-## Tech stack
-
-- **Python**
-- **Streamlit**
-- **Pandas**
-- **Plotly**
-- **AFDC / NREL Alternative Fuel Stations API**
+- National EV charging station count
+- Infrastructure concentration by state
+- Charging power mix (Level 2 vs DC Fast)
+- Network landscape (top providers)
+- State-level drilldown analysis
+- Interactive geographic mapping
+- Downloadable filtered dataset
 
 ---
 
-## Data source
+## Why this project matters
 
-AFDC Alternative Fuel Stations API (NREL): https://developer.nrel.gov/
+This dashboard reflects real-world implementation skills:
+
+- Live API integration (federal infrastructure dataset)
+- Data cleaning and schema normalization
+- Interactive filtering and drilldown views
+- Insight-focused visualization (not just charts)
+- Cloud deployment with secure configuration
+
+It is designed to be accessible to non-technical viewers while still demonstrating production-ready engineering practices.
 
 ---
 
-## Running locally
+## Technology
 
-### 1) Clone the repo
+- Python
+- Streamlit
+- Pandas
+- Plotly
+- AFDC / NREL Alternative Fuel Stations API
 
-```bash
-git clone https://github.com/digitalderegulated-labs/ev-charging-market-dashboard.git
-cd ev-charging-market-dashboard
+---
+
+## Data Source
+
+AFDC Alternative Fuel Stations API (NREL)  
+https://developer.nrel.gov/
+
+---
+
+## Project Structure
+
+- `dashboard.py` – main application logic
+- `requirements.txt` – dependency configuration
+- `.streamlit/config.toml` – UI theme configuration
+
+---
+
+## License
+
+MIT
