@@ -142,7 +142,7 @@ k3.metric("Everyday chargers (Level 2 ports)", f"{level2_ports:,}")
 k4.metric("Road-trip fast chargers (DC Fast ports)", f"{dc_fast_ports:,}")
 
 st.info(
-    f"**Insight:**{dc_share}%** of ports are fast chargers. "
+    f"**Plain-English insight: **{dc_share}%** of ports are fast chargers. "
     "Higher fast-charger share typically supports better road-trip / corridor coverage."
 )
 
@@ -263,4 +263,3 @@ with st.expander("Preview filtered data (first 200 rows)"):
 
 st.markdown("---")
 st.caption("Built by Digital Deregulated Labs • Live federal infrastructure data via AFDC (NREL) API")
-
