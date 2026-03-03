@@ -35,3 +35,10 @@ This dashboard is designed to be understandable for the **general public**, whil
 1) Install dependencies:
 ```bash
 pip install -r requirements.txt
+
+---
+
+## Data Source
+
+AFDC Alternative Fuel Stations API (NREL):  
+https://developer.nrel.gov/
