@@ -169,7 +169,7 @@ fig_mix.update_layout(height=420, yaxis_title="Ports", xaxis_title="")
 st.plotly_chart(fig_mix, use_container_width=True)
 
 st.info(
-    f"**Plain-English insight:** In this view, about **{dc_share}%** of ports are fast chargers. "
+    f"**Insight:** In this view, about **{dc_share}%** of ports are fast chargers. "
     "Higher fast-charger share typically signals stronger road-trip / corridor coverage."
 )
 
