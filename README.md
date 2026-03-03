@@ -4,19 +4,17 @@
 🔗 **Live Application:**  
 https://ev-charging-market-dashboard.streamlit.app/
 
-An interactive analytics dashboard built on live U.S. EV charging infrastructure data from the U.S. Department of Energy’s AFDC (NREL) API.
+An interactive analytics dashboard built on live U.S. EV charging infrastructure data from the U.S. Department of Energy’s AFDC (NREL) Alternative Fuel Stations API.
 
 This project demonstrates how public infrastructure data can be ingested, normalized, and transformed into a clean, deployable analytics product.
 
 ---
 
-## Overview
+## Built for
 
-The U.S. EV charging market is expanding rapidly due to federal incentives, utility partnerships, and private network investment.  
-
-This dashboard provides a structured view of that infrastructure landscape, turning raw federal data into clear, explorable insight.
-
-It balances accessibility for public audiences with production-grade engineering implementation.
+- EV charging developers evaluating expansion markets and infrastructure density
+- Energy suppliers and utilities targeting EV load growth
+- Analysts benchmarking charging network footprint by state and city
 
 ---
 
@@ -24,11 +22,10 @@ It balances accessibility for public audiences with production-grade engineering
 
 - National EV charging station count
 - Infrastructure concentration by state
-- Charging power mix (Level 2 vs DC Fast)
-- Network landscape (top providers)
-- State-level drilldown analysis
-- Optional interactive geographic mapping
-- Downloadable filtered dataset
+- Charging speed mix (Level 2 vs DC Fast)
+- Network landscape (top providers + market share)
+- City concentration (top cities by station count)
+- Downloadable filtered dataset (transparency + further analysis)
 
 ---
 
@@ -41,7 +38,6 @@ This dashboard reflects real-world implementation skills:
 - Interactive filtering and drilldown views
 - Insight-focused visualization (not just charts)
 - Production deployment with secure configuration management
-- Clean UI/UX framing for non-technical audiences
 
 It demonstrates the ability to transform public data into decision-ready infrastructure intelligence.
 
@@ -53,7 +49,6 @@ It demonstrates the ability to transform public data into decision-ready infrast
 - Streamlit
 - Pandas
 - Plotly
-- AFDC / NREL Alternative Fuel Stations API
 - Streamlit Community Cloud (deployment)
 
 ---
@@ -69,13 +64,13 @@ https://developer.nrel.gov/
 
 - `dashboard.py` – main application logic
 - `requirements.txt` – dependency configuration
-- `.streamlit/config.toml` – UI theme configuration
+- `.streamlit/config.toml` – UI theme configuration (optional)
 
 ---
 
 ## About Digital Deregulated Labs
 
-Digital Deregulated Labs focuses on building analytics tools and infrastructure intelligence platforms across energy, utilities, and regulated markets.
+Digital Deregulated Labs focuses on building analytics tools and infrastructure intelligence platforms across technology, energy, and healthcare.
 
 This dashboard serves as a live demonstration of applied data engineering and energy market analytics.
 
