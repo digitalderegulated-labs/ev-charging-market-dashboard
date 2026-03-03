@@ -2,20 +2,20 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-# ---------------------------------------------------
+# -------------------------------------------------
 # PAGE CONFIG
-# ---------------------------------------------------
+# -------------------------------------------------
 st.set_page_config(
-    page_title="US EV Charging Infrastructure Intelligence",
+    page_title="EV Charging Network Competitive Intelligence",
     layout="wide"
 )
 
-st.title("US EV Charging Infrastructure Intelligence Platform")
-st.markdown("Live data from U.S. Department of Energy AFDC")
+st.title("EV Charging Network Competitive Intelligence Platform")
+st.markdown("Live federal infrastructure data via NREL AFDC API")
 
-# ---------------------------------------------------
+# -------------------------------------------------
 # LOAD DATA FROM NREL API
-# ---------------------------------------------------
+# -------------------------------------------------
 @st.cache_data(ttl=3600)
 def load_data():
     API_KEY = st.secrets["NREL_API_KEY"]
@@ -37,77 +37,111 @@ if df.empty:
     st.error("No data returned from API.")
     st.stop()
 
-# ---------------------------------------------------
+# -------------------------------------------------
 # NATIONAL OVERVIEW
-# ---------------------------------------------------
+# -------------------------------------------------
 st.header("National Infrastructure Overview")
 
 total_stations = len(df)
 states_covered = df["state"].nunique() if "state" in df.columns else 0
-active = len(df[df["status code"] == "E"]) if "status code" in df.columns else 0
+networks = df["ev network"].nunique() if "ev network" in df.columns else 0
 
 col1, col2, col3 = st.columns(3)
 col1.metric("Total Stations", f"{total_stations:,}")
 col2.metric("States Covered", states_covered)
-col3.metric("Active Stations", f"{active:,}")
+col3.metric("Active Networks", networks)
 
 st.divider()
 
-# ---------------------------------------------------
-# ACCESS BREAKDOWN
-# ---------------------------------------------------
-st.header("Access Model")
+# -------------------------------------------------
+# NETWORK MARKET SHARE
+# -------------------------------------------------
+st.header("Network Market Share")
 
-if "access code" in df.columns:
-    access_counts = df["access code"].fillna("Unknown").value_counts().reset_index()
-    access_counts.columns = ["Access Type", "Stations"]
+if "ev network" in df.columns:
 
-    fig_access = px.pie(
-        access_counts,
-        names="Access Type",
-        values="Stations",
-        hole=0.4
+    network_counts = (
+        df["ev network"]
+        .fillna("Unknown")
+        .value_counts()
+        .reset_index()
     )
 
-    st.plotly_chart(fig_access, use_container_width=True)
-else:
-    st.info("Access data not available.")
+    network_counts.columns = ["Network", "Stations"]
+
+    network_counts["Market Share %"] = (
+        network_counts["Stations"] /
+        network_counts["Stations"].sum() * 100
+    ).round(2)
+
+    fig_market = px.bar(
+        network_counts.head(10),
+        x="Network",
+        y="Market Share %",
+        text="Market Share %",
+        color="Market Share %",
+        color_continuous_scale="Blues"
+    )
+
+    st.plotly_chart(fig_market, use_container_width=True)
 
 st.divider()
 
-# ---------------------------------------------------
-# CHARGER TECHNOLOGY MIX
-# ---------------------------------------------------
-st.header("Charging Technology Mix")
+# -------------------------------------------------
+# DC FAST STRATEGY BY NETWORK
+# -------------------------------------------------
+st.header("Charging Power Strategy (DC Fast %)")
 
-level2_total = df["ev level2 evse num"].fillna(0).sum() if "ev level2 evse num" in df.columns else 0
-dc_fast_total = df["ev dc fast count"].fillna(0).sum() if "ev dc fast count" in df.columns else 0
+if "ev network" in df.columns and \
+   "ev dc fast count" in df.columns and \
+   "ev level2 evse num" in df.columns:
 
-tech_df = pd.DataFrame({
-    "Charger Type": ["Level 2", "DC Fast"],
-    "Total Units": [level2_total, dc_fast_total]
-})
+    network_mix = (
+        df.groupby("ev network")
+        .agg({
+            "ev dc fast count": "sum",
+            "ev level2 evse num": "sum"
+        })
+        .fillna(0)
+        .reset_index()
+    )
 
-fig_tech = px.bar(
-    tech_df,
-    x="Charger Type",
-    y="Total Units",
-    text="Total Units",
-    color="Charger Type"
-)
+    network_mix["Total Ports"] = (
+        network_mix["ev dc fast count"] +
+        network_mix["ev level2 evse num"]
+    )
 
-st.plotly_chart(fig_tech, use_container_width=True)
+    network_mix["DC Fast %"] = (
+        network_mix["ev dc fast count"] /
+        network_mix["Total Ports"]
+    ).fillna(0) * 100
+
+    fig_mix = px.bar(
+        network_mix.sort_values("DC Fast %", ascending=False).head(10),
+        x="ev network",
+        y="DC Fast %",
+        text="DC Fast %",
+        color="DC Fast %",
+        color_continuous_scale="Reds"
+    )
+
+    st.plotly_chart(fig_mix, use_container_width=True)
 
 st.divider()
 
-# ---------------------------------------------------
+# -------------------------------------------------
 # TOP STATES
-# ---------------------------------------------------
-st.header("Top 15 States by Infrastructure")
+# -------------------------------------------------
+st.header("Top 15 States by Infrastructure Density")
 
 if "state" in df.columns:
-    state_counts = df.groupby("state").size().reset_index(name="Stations")
-    state_counts = state_counts.sort_values("Stations", ascending=False)
+
+    state_counts = (
+        df.groupby("state")
+        .size()
+        .reset_index(name="Stations")
+        .sort_values("Stations", ascending=False)
+    )
 
     fig_states = px.bar(
         state_counts.head(15),
@@ -115,51 +149,54 @@ if "state" in df.columns:
         y="Stations",
         text="Stations",
         color="Stations",
-        color_continuous_scale="Blues"
+        color_continuous_scale="Greens"
     )
 
     st.plotly_chart(fig_states, use_container_width=True)
 
 st.divider()
 
-# ---------------------------------------------------
-# NETWORK COMPETITION
-# ---------------------------------------------------
-st.header("Network Landscape")
+# -------------------------------------------------
+# STATE MARKET LEADER
+# -------------------------------------------------
+st.header("Market Leader by State")
 
-if "ev network" in df.columns:
-    network_counts = (
-        df["ev network"]
-        .fillna("Unknown")
-        .value_counts()
-        .reset_index()
+if "state" in df.columns and "ev network" in df.columns:
+
+    state_network = (
+        df.groupby(["state", "ev network"])
+        .size()
+        .reset_index(name="Stations")
     )
-    network_counts.columns = ["Network", "Stations"]
 
-    fig_network = px.bar(
-        network_counts.head(10),
-        x="Network",
+    leaders = state_network.loc[
+        state_network.groupby("state")["Stations"].idxmax()
+    ]
+
+    fig_leader = px.bar(
+        leaders.sort_values("Stations", ascending=False).head(15),
+        x="state",
         y="Stations",
         text="Stations",
-        color="Stations",
-        color_continuous_scale="Greens"
+        color="ev network"
     )
 
-    st.plotly_chart(fig_network, use_container_width=True)
+    st.plotly_chart(fig_leader, use_container_width=True)
 
 st.divider()
 
-# ---------------------------------------------------
+# -------------------------------------------------
 # MAP
-# ---------------------------------------------------
+# -------------------------------------------------
 st.header("Geographic Distribution")
 
 if "latitude" in df.columns and "longitude" in df.columns:
+
     fig_map = px.scatter_mapbox(
-        df,
+        df.sample(min(len(df), 5000)),  # performance safety
         lat="latitude",
         lon="longitude",
-        color="state",
+        color="ev network" if "ev network" in df.columns else None,
         zoom=3,
         height=600
     )
@@ -170,12 +207,13 @@ if "latitude" in df.columns and "longitude" in df.columns:
 
 st.divider()
 
-# ---------------------------------------------------
+# -------------------------------------------------
 # STATE DRILLDOWN
-# ---------------------------------------------------
+# -------------------------------------------------
 st.header("State Drilldown")
 
 if "state" in df.columns:
+
     selected_state = st.selectbox(
         "Select State",
         sorted(df["state"].dropna().unique())
@@ -187,22 +225,3 @@ if "state" in df.columns:
         f"Stations in {selected_state}",
         f"{len(state_df):,}"
     )
-
-    if "ev level2 evse num" in state_df.columns and "ev dc fast count" in state_df.columns:
-        state_level2 = state_df["ev level2 evse num"].fillna(0).sum()
-        state_dc = state_df["ev dc fast count"].fillna(0).sum()
-
-        state_mix = pd.DataFrame({
-            "Type": ["Level 2", "DC Fast"],
-            "Total Units": [state_level2, state_dc]
-        })
-
-        fig_state = px.bar(
-            state_mix,
-            x="Type",
-            y="Total Units",
-            text="Total Units",
-            color="Type"
-        )
-
-        st.plotly_chart(fig_state, use_container_width=True)
