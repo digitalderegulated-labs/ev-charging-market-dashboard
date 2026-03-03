@@ -7,18 +7,21 @@ st.set_page_config(page_title="EV Market Intelligence Dashboard", layout="wide")
 st.title("EV Charging Market Intelligence Dashboard")
 st.markdown("Live data from U.S. Department of Energy AFDC.")
 
-# DOE AFDC API (no key required for basic use)
-DATA_URL = "https://developer.nrel.gov/api/alt-fuel-stations/v1.csv?fuel_type=ELEC&limit=all"
+# 🔑 Replace with your NREL API key
+API_KEY = st.secrets["NREL_API_KEY"]
+
+DATA_URL = (
+    f"https://developer.nrel.gov/api/alt-fuel-stations/v1.csv"
+    f"?api_key={API_KEY}"
+    f"&fuel_type=ELEC"
+    f"&limit=all"
+)
 
 @st.cache_data
 def load_data():
-    df = pd.read_csv(DATA_URL)
-    return df
+    return pd.read_csv(DATA_URL)
 
 df = load_data()
-
-# Basic filtering
-df = df[df["fuel_type_code"] == "ELEC"]
 
 total_stations = len(df)
 total_states = df["state"].nunique()
@@ -29,7 +32,6 @@ col2.metric("States Represented", total_states)
 
 st.divider()
 
-# State ranking
 state_counts = df.groupby("state").size().reset_index(name="Stations")
 state_counts = state_counts.sort_values("Stations", ascending=False)
 
