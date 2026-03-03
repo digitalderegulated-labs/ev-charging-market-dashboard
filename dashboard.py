@@ -2,9 +2,9 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-# -----------------------------------
+# ---------------------------------------------------
 # PAGE CONFIG
-# -----------------------------------
+# ---------------------------------------------------
 st.set_page_config(
     page_title="US EV Charging Infrastructure Intelligence",
     layout="wide"
@@ -13,45 +13,53 @@ st.set_page_config(
 st.title("US EV Charging Infrastructure Intelligence Platform")
 st.markdown("Live data from U.S. Department of Energy AFDC")
 
-# -----------------------------------
-# LOAD DATA (FROM CSV ALREADY IN REPO)
-# -----------------------------------
-@st.cache_data
+# ---------------------------------------------------
+# LOAD DATA FROM NREL API
+# ---------------------------------------------------
+@st.cache_data(ttl=3600)
 def load_data():
-    df = pd.read_csv("ev_data.csv")
+    API_KEY = st.secrets["NREL_API_KEY"]
+
+    DATA_URL = (
+        "https://developer.nrel.gov/api/alt-fuel-stations/v1.csv?"
+        f"api_key={API_KEY}"
+        "&fuel_type=ELEC"
+        "&limit=all"
+    )
+
+    df = pd.read_csv(DATA_URL)
     df.columns = df.columns.str.lower()
     return df
 
 df = load_data()
 
 if df.empty:
-    st.error("Dataset is empty.")
+    st.error("No data returned from API.")
     st.stop()
 
-# -----------------------------------
+# ---------------------------------------------------
 # NATIONAL OVERVIEW
-# -----------------------------------
+# ---------------------------------------------------
 st.header("National Infrastructure Overview")
 
 total_stations = len(df)
-states_covered = df["state"].nunique() if "state" in df.columns else "N/A"
-
-active = len(df[df["status code"] == "E"]) if "status code" in df.columns else "N/A"
+states_covered = df["state"].nunique() if "state" in df.columns else 0
+active = len(df[df["status code"] == "E"]) if "status code" in df.columns else 0
 
 col1, col2, col3 = st.columns(3)
 col1.metric("Total Stations", f"{total_stations:,}")
 col2.metric("States Covered", states_covered)
-col3.metric("Active Stations", f"{active:,}" if isinstance(active, int) else "N/A")
+col3.metric("Active Stations", f"{active:,}")
 
 st.divider()
 
-# -----------------------------------
-# ACCESS MODEL
-# -----------------------------------
+# ---------------------------------------------------
+# ACCESS BREAKDOWN
+# ---------------------------------------------------
 st.header("Access Model")
 
 if "access code" in df.columns:
-    access_counts = df["access code"].value_counts().reset_index()
+    access_counts = df["access code"].fillna("Unknown").value_counts().reset_index()
     access_counts.columns = ["Access Type", "Stations"]
 
     fig_access = px.pie(
@@ -60,15 +68,16 @@ if "access code" in df.columns:
         values="Stations",
         hole=0.4
     )
+
     st.plotly_chart(fig_access, use_container_width=True)
 else:
     st.info("Access data not available.")
 
 st.divider()
 
-# -----------------------------------
-# TECHNOLOGY MIX
-# -----------------------------------
+# ---------------------------------------------------
+# CHARGER TECHNOLOGY MIX
+# ---------------------------------------------------
 st.header("Charging Technology Mix")
 
 level2_total = df["ev level2 evse num"].fillna(0).sum() if "ev level2 evse num" in df.columns else 0
@@ -91,9 +100,31 @@ st.plotly_chart(fig_tech, use_container_width=True)
 
 st.divider()
 
-# -----------------------------------
+# ---------------------------------------------------
+# TOP STATES
+# ---------------------------------------------------
+st.header("Top 15 States by Infrastructure")
+
+if "state" in df.columns:
+    state_counts = df.groupby("state").size().reset_index(name="Stations")
+    state_counts = state_counts.sort_values("Stations", ascending=False)
+
+    fig_states = px.bar(
+        state_counts.head(15),
+        x="state",
+        y="Stations",
+        text="Stations",
+        color="Stations",
+        color_continuous_scale="Blues"
+    )
+
+    st.plotly_chart(fig_states, use_container_width=True)
+
+st.divider()
+
+# ---------------------------------------------------
 # NETWORK COMPETITION
-# -----------------------------------
+# ---------------------------------------------------
 st.header("Network Landscape")
 
 if "ev network" in df.columns:
@@ -111,18 +142,16 @@ if "ev network" in df.columns:
         y="Stations",
         text="Stations",
         color="Stations",
-        color_continuous_scale="Blues"
+        color_continuous_scale="Greens"
     )
 
     st.plotly_chart(fig_network, use_container_width=True)
-else:
-    st.info("Network data not available.")
 
 st.divider()
 
-# -----------------------------------
-# GEOGRAPHIC MAP
-# -----------------------------------
+# ---------------------------------------------------
+# MAP
+# ---------------------------------------------------
 st.header("Geographic Distribution")
 
 if "latitude" in df.columns and "longitude" in df.columns:
@@ -130,7 +159,7 @@ if "latitude" in df.columns and "longitude" in df.columns:
         df,
         lat="latitude",
         lon="longitude",
-        color="state" if "state" in df.columns else None,
+        color="state",
         zoom=3,
         height=600
     )
@@ -138,14 +167,12 @@ if "latitude" in df.columns and "longitude" in df.columns:
     fig_map.update_layout(mapbox_style="carto-positron")
 
     st.plotly_chart(fig_map, use_container_width=True)
-else:
-    st.info("Location data not available.")
 
 st.divider()
 
-# -----------------------------------
+# ---------------------------------------------------
 # STATE DRILLDOWN
-# -----------------------------------
+# ---------------------------------------------------
 st.header("State Drilldown")
 
 if "state" in df.columns:
@@ -179,5 +206,3 @@ if "state" in df.columns:
         )
 
         st.plotly_chart(fig_state, use_container_width=True)
-else:
-    st.info("State data not available.")
