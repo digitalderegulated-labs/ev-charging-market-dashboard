@@ -19,6 +19,7 @@ st.caption(
     "Live U.S. EV charging station data from the DOE AFDC (NREL) API. "
     "Designed for public clarity + portfolio credibility."
 )
+st.markdown("**Built for:** EV charging developers, energy suppliers, and utilities targeting EV load growth.")
 
 # -----------------------------
 # LOAD DATA (API ONLY)
@@ -142,7 +143,7 @@ k3.metric("Everyday chargers (Level 2 ports)", f"{level2_ports:,}")
 k4.metric("Road-trip fast chargers (DC Fast ports)", f"{dc_fast_ports:,}")
 
 st.info(
-    f"**Insight: **{dc_share}%** of ports are fast chargers. "
+    f"**Insight:**{dc_share}%** of ports are fast chargers. "
 )
 
 st.divider()
@@ -198,10 +199,7 @@ network_counts = (
     .value_counts()
     .reset_index()
 )
-
 network_counts.columns = ["Network", "Stations"]
-
-# Market share for public-friendly insight
 network_counts["Market Share %"] = (network_counts["Stations"] / network_counts["Stations"].sum() * 100).round(1)
 
 fig_networks = px.bar(
@@ -221,7 +219,6 @@ st.divider()
 # -----------------------------
 st.subheader("🏙️ Top cities (by station count)")
 
-# Create a safe city label
 city_df = filtered.copy()
 city_df["city"] = city_df["city"].replace({"": "Unknown", "nan": "Unknown"}).fillna("Unknown")
 
@@ -245,7 +242,7 @@ st.plotly_chart(fig_cities, use_container_width=True)
 st.divider()
 
 # -----------------------------
-# SECTION 5: DATA TABLE + DOWNLOAD
+# SECTION 5: DOWNLOAD + PREVIEW
 # -----------------------------
 st.subheader("📥 Download the filtered dataset")
 st.write("Download what you're seeing (after filters) for transparency or deeper analysis.")
@@ -262,5 +259,3 @@ with st.expander("Preview filtered data (first 200 rows)"):
 
 st.markdown("---")
 st.caption("Built by Digital Deregulated Labs • Live federal infrastructure data via AFDC (NREL) API")
-
-
