@@ -49,7 +49,10 @@ if df.empty:
 # -----------------------------
 total_stations = len(df)
 total_states = df["state"].nunique()
-unique_networks = df["ev_network"].nunique()
+if "ev_network" in df.columns:
+    unique_networks = df["ev_network"].nunique()
+else:
+    unique_networks = "N/A"
 
 col1, col2, col3 = st.columns(3)
 col1.metric("Total EV Charging Stations (US)", f"{total_stations:,}")
@@ -160,3 +163,4 @@ fig_network.update_layout(height=450)
 st.plotly_chart(fig_network, use_container_width=True)
 
 # redeploy trigger
+
