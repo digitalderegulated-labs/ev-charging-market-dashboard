@@ -8,7 +8,7 @@ st.title("EV Charging Market Intelligence Dashboard")
 st.markdown("Live data from U.S. Department of Energy AFDC.")
 
 # 🔑 Replace with your NREL API key
-API_KEY = st.secrets["NREL_API_KEY"]
+API_KEY = "PASTE_YOUR_REAL_KEY_HERE"
 
 DATA_URL = (
     f"https://developer.nrel.gov/api/alt-fuel-stations/v1.csv"
@@ -47,3 +47,4 @@ fig = px.bar(
 fig.update_layout(height=500)
 
 st.plotly_chart(fig, use_container_width=True)
+
