@@ -1,28 +1,31 @@
-# US EV Charging Infrastructure Intelligence Platform
+# EV Charging Network Competitive Intelligence Platform
 
 Live App: https://ev-charging-market-dashboard.streamlit.app/
 
 ## Overview
 
-This platform provides live EV charging infrastructure intelligence using real-time data from the U.S. Department of Energy (AFDC) API.
+This platform analyzes the competitive landscape of EV charging networks across the United States using live data from the U.S. Department of Energy AFDC API.
 
-The dashboard enables analysis of:
+The goal is to evaluate network market share, geographic concentration, charger mix, and access positioning to identify competitive gaps and expansion opportunities.
 
-- National EV charging station distribution
-- Public vs Private access segmentation
-- Level 2 vs DC Fast charger deployment
-- State-level infrastructure concentration
-- Charging network market share
-- Geographic infrastructure visualization
+## Competitive Insights Delivered
 
-## Key Capabilities
+- Top EV charging networks by station count
+- Geographic network concentration by state
+- Level 2 vs DC Fast infrastructure mix by network
+- Public vs Private access positioning
+- National infrastructure density comparison
+- State-level competitive saturation
 
-- Live federal data ingestion via NREL API
-- Secure API key management using Streamlit Secrets
-- Automated data refresh
-- Interactive state-level drilldown
-- Market concentration analysis
-- Geospatial mapping
+## Strategic Use Cases
+
+This tool can support:
+
+- EV charging network expansion strategy
+- Utility partnership targeting
+- Market entry analysis
+- Competitive benchmarking
+- Infrastructure investment prioritization
 
 ## Technology Stack
 
@@ -30,19 +33,7 @@ The dashboard enables analysis of:
 - Streamlit
 - Pandas
 - Plotly Express
-- NREL / AFDC API
-
-## Why This Matters
-
-EV infrastructure deployment is accelerating across the United States.  
-This tool demonstrates how live federal data can be transformed into actionable infrastructure intelligence for:
-
-- Energy suppliers
-- EV charging networks
-- Utilities
-- Policy analysts
-- Market strategy teams
-
+- NREL / AFDC API (live federal data)
 ---
 
-Built as a live data engineering + infrastructure analytics demonstration.
+Built as a live infrastructure intelligence and competitive strategy demonstration.
