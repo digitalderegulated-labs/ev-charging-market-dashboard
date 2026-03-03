@@ -14,7 +14,7 @@ DATA_URL = (
     "https://developer.nrel.gov/api/alt-fuel-stations/v1.csv?"
     f"api_key={API_KEY}"
     "&fuel_type=ELEC"
-    "&limit=20000"
+    "&limit=all"
 )
 
 @st.cache_data
@@ -51,3 +51,4 @@ fig = px.bar(
 fig.update_layout(height=500)
 
 st.plotly_chart(fig, use_container_width=True)
+
