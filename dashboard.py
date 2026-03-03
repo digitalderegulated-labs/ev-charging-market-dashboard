@@ -36,10 +36,19 @@ col2.metric("States Represented", total_states)
 
 st.divider()
 
-state_counts = df.groupby("state").size().reset_index(name="Stations")
-state_counts = state_counts.sort_values("Stations", ascending=False)
+st.subheader("Explore Individual State")
 
-st.subheader("Top 15 States by EV Charging Infrastructure")
+selected_state = st.selectbox(
+    "Choose a state",
+    sorted(df["state"].unique())
+)
+
+state_df = df[df["state"] == selected_state]
+
+st.metric(
+    f"Total EV Stations in {selected_state}",
+    len(state_df)
+)
 
 fig = px.bar(
     state_counts.head(15),
@@ -51,4 +60,5 @@ fig = px.bar(
 fig.update_layout(height=500)
 
 st.plotly_chart(fig, use_container_width=True)
+
 
