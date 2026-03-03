@@ -115,8 +115,14 @@ st.metric(
 # -----------------------------
 st.subheader("Charger Type Breakdown")
 
-level2 = state_df["ev_level2_evse_num"].fillna(0).sum()
-dc_fast = state_df["ev_dc_fast_num"].fillna(0).sum()
+level2 = 0
+dc_fast = 0
+
+if "ev_level2_evse_num" in state_df.columns:
+    level2 = state_df["ev_level2_evse_num"].fillna(0).sum()
+
+if "ev_dc_fast_num" in state_df.columns:
+    dc_fast = state_df["ev_dc_fast_num"].fillna(0).sum()
 
 charger_data = pd.DataFrame({
     "Charger Type": ["Level 2", "DC Fast"],
@@ -163,4 +169,5 @@ fig_network.update_layout(height=450)
 st.plotly_chart(fig_network, use_container_width=True)
 
 # redeploy trigger
+
 
