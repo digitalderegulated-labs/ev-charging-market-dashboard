@@ -4,28 +4,59 @@ Live App: https://ev-charging-market-dashboard.streamlit.app/
 
 ## Overview
 
-This platform analyzes the competitive landscape of EV charging networks across the United States using live data from the U.S. Department of Energy AFDC API.
+This project is a live EV charging infrastructure intelligence platform built using real-time data from the U.S. Department of Energy (AFDC) API.
 
-The goal is to evaluate network market share, geographic concentration, charger mix, and access positioning to identify competitive gaps and expansion opportunities.
+The platform analyzes charging network market share, geographic concentration, infrastructure power mix, and state-level competitive dominance across the United States.
 
-## Competitive Insights Delivered
+It demonstrates how federal infrastructure data can be transformed into actionable competitive insight.
 
-- Top EV charging networks by station count
-- Geographic network concentration by state
-- Level 2 vs DC Fast infrastructure mix by network
-- Public vs Private access positioning
-- National infrastructure density comparison
-- State-level competitive saturation
+---
 
-## Strategic Use Cases
+## What This Platform Analyzes
 
-This tool can support:
+- National EV charging station footprint
+- Charging network market share (% of total infrastructure)
+- Level 2 vs DC Fast deployment strategy by network
+- State-level infrastructure density
+- Market leader by state
+- Geographic network distribution
+- Infrastructure concentration trends
 
-- EV charging network expansion strategy
+---
+
+## Why This Matters
+
+EV charging infrastructure is rapidly expanding across the U.S., driven by:
+
+- Federal funding initiatives
+- Utility partnerships
+- Private charging network expansion
+- Transportation electrification policy
+
+Understanding market share, charging power mix, and regional dominance is critical for:
+
+- Charging network expansion strategy
 - Utility partnership targeting
 - Market entry analysis
 - Competitive benchmarking
 - Infrastructure investment prioritization
+
+---
+
+## Technical Implementation
+
+This platform includes:
+
+- Live API data ingestion from NREL AFDC
+- Secure API key management via Streamlit Secrets
+- Automated data refresh
+- Market share calculations
+- Infrastructure power mix analysis
+- Interactive geospatial visualization
+- State-level drilldown analytics
+- Cloud deployment via Streamlit Community Cloud
+
+---
 
 ## Technology Stack
 
@@ -33,7 +64,19 @@ This tool can support:
 - Streamlit
 - Pandas
 - Plotly Express
-- NREL / AFDC API (live federal data)
+- NREL / AFDC API
+- GitHub (version control & CI deployment)
+
 ---
 
-Built as a live infrastructure intelligence and competitive strategy demonstration.
+## Strategic Positioning
+
+This project demonstrates:
+
+- Data engineering capability
+- Infrastructure analytics
+- EV market knowledge
+- Competitive landscape analysis
+- Cloud deployment and secure configuration management
+
+Built as a live infrastructure analytics and competitive intelligence demonstration.
