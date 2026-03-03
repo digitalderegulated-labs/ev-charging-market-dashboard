@@ -7,21 +7,25 @@ st.set_page_config(page_title="EV Market Intelligence Dashboard", layout="wide")
 st.title("EV Charging Market Intelligence Dashboard")
 st.markdown("Live data from U.S. Department of Energy AFDC.")
 
-# 🔑 Replace with your NREL API key
-API_KEY = "PASTE_YOUR_REAL_KEY_HERE"
+# Get API key securely
+API_KEY = st.secrets["NREL_API_KEY"]
 
 DATA_URL = (
-    f"https://developer.nrel.gov/api/alt-fuel-stations/v1.csv"
-    f"?api_key={API_KEY}"
-    f"&fuel_type=ELEC"
-    f"&limit=all"
+    "https://developer.nrel.gov/api/alt-fuel-stations/v1.csv?"
+    f"api_key={API_KEY}"
+    "&fuel_type=ELEC"
+    "&limit=20000"
 )
 
 @st.cache_data
 def load_data():
-    return pd.read_csv(DATA_URL)
+    df = pd.read_csv(DATA_URL)
+    return df
 
 df = load_data()
+
+# Clean column names (NREL sometimes capitalizes)
+df.columns = df.columns.str.lower()
 
 total_stations = len(df)
 total_states = df["state"].nunique()
@@ -47,4 +51,3 @@ fig = px.bar(
 fig.update_layout(height=500)
 
 st.plotly_chart(fig, use_container_width=True)
-
