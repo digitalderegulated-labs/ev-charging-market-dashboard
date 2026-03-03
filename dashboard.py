@@ -158,3 +158,5 @@ fig_network = px.bar(
 fig_network.update_layout(height=450)
 
 st.plotly_chart(fig_network, use_container_width=True)
+
+# redeploy trigger
