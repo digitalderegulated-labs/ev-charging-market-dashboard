@@ -1,20 +1,21 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import numpy as np
 
 # -------------------------------------------------
 # PAGE CONFIG
 # -------------------------------------------------
 st.set_page_config(
-    page_title="EV Charging Network Competitive Intelligence",
+    page_title="EV Charging Market Structure Intelligence",
     layout="wide"
 )
 
-st.title("EV Charging Network Competitive Intelligence Platform")
+st.title("EV Charging Market Structure & Competitive Intelligence")
 st.markdown("Live federal infrastructure data via NREL AFDC API")
 
 # -------------------------------------------------
-# LOAD DATA FROM NREL API
+# LOAD DATA
 # -------------------------------------------------
 @st.cache_data(ttl=3600)
 def load_data():
@@ -38,63 +39,64 @@ if df.empty:
     st.stop()
 
 # -------------------------------------------------
-# NATIONAL OVERVIEW
+# NATIONAL STRUCTURE METRICS
 # -------------------------------------------------
-st.header("National Infrastructure Overview")
+st.header("Market Structure Overview")
 
 total_stations = len(df)
-states_covered = df["state"].nunique() if "state" in df.columns else 0
-networks = df["ev network"].nunique() if "ev network" in df.columns else 0
+
+network_counts = (
+    df["ev network"]
+    .fillna("Unknown")
+    .value_counts()
+    .reset_index()
+)
+
+network_counts.columns = ["Network", "Stations"]
+
+network_counts["Market Share"] = (
+    network_counts["Stations"] / network_counts["Stations"].sum()
+)
+
+# Herfindahl-Hirschman Index (HHI)
+hhi = (network_counts["Market Share"] ** 2).sum()
+
+top5_share = network_counts.head(5)["Market Share"].sum()
+
+fragmentation = 1 - top5_share
 
 col1, col2, col3 = st.columns(3)
 col1.metric("Total Stations", f"{total_stations:,}")
-col2.metric("States Covered", states_covered)
-col3.metric("Active Networks", networks)
+col2.metric("Top 5 Market Share", f"{top5_share*100:.1f}%")
+col3.metric("HHI (Concentration Index)", f"{hhi:.3f}")
 
 st.divider()
 
 # -------------------------------------------------
-# NETWORK MARKET SHARE
+# MARKET SHARE CHART
 # -------------------------------------------------
 st.header("Network Market Share")
 
-if "ev network" in df.columns:
+fig_market = px.bar(
+    network_counts.head(10),
+    x="Network",
+    y=network_counts.head(10)["Market Share"] * 100,
+    text=(network_counts.head(10)["Market Share"] * 100).round(2),
+    labels={"y": "Market Share (%)"},
+    color=network_counts.head(10)["Market Share"] * 100,
+    color_continuous_scale="Blues"
+)
 
-    network_counts = (
-        df["ev network"]
-        .fillna("Unknown")
-        .value_counts()
-        .reset_index()
-    )
-
-    network_counts.columns = ["Network", "Stations"]
-
-    network_counts["Market Share %"] = (
-        network_counts["Stations"] /
-        network_counts["Stations"].sum() * 100
-    ).round(2)
-
-    fig_market = px.bar(
-        network_counts.head(10),
-        x="Network",
-        y="Market Share %",
-        text="Market Share %",
-        color="Market Share %",
-        color_continuous_scale="Blues"
-    )
-
-    st.plotly_chart(fig_market, use_container_width=True)
+st.plotly_chart(fig_market, use_container_width=True)
 
 st.divider()
 
 # -------------------------------------------------
-# DC FAST STRATEGY BY NETWORK
+# POWER STRATEGY POSITIONING
 # -------------------------------------------------
-st.header("Charging Power Strategy (DC Fast %)")
+st.header("Power Strategy Positioning (DC Fast Focus)")
 
-if "ev network" in df.columns and \
-   "ev dc fast count" in df.columns and \
-   "ev level2 evse num" in df.columns:
+if "ev dc fast count" in df.columns and "ev level2 evse num" in df.columns:
 
     network_mix = (
         df.groupby("ev network")
@@ -116,112 +118,69 @@ if "ev network" in df.columns and \
         network_mix["Total Ports"]
     ).fillna(0) * 100
 
-    fig_mix = px.bar(
-        network_mix.sort_values("DC Fast %", ascending=False).head(10),
-        x="ev network",
+    fig_power = px.scatter(
+        network_mix,
+        x="Total Ports",
         y="DC Fast %",
-        text="DC Fast %",
+        text="ev network",
+        size="Total Ports",
         color="DC Fast %",
         color_continuous_scale="Reds"
     )
 
-    st.plotly_chart(fig_mix, use_container_width=True)
+    fig_power.update_traces(textposition="top center")
+
+    st.plotly_chart(fig_power, use_container_width=True)
 
 st.divider()
 
 # -------------------------------------------------
-# TOP STATES
+# STATE DOMINANCE ANALYSIS
 # -------------------------------------------------
-st.header("Top 15 States by Infrastructure Density")
+st.header("State-Level Market Leaders")
 
-if "state" in df.columns:
+state_network = (
+    df.groupby(["state", "ev network"])
+    .size()
+    .reset_index(name="Stations")
+)
 
-    state_counts = (
-        df.groupby("state")
-        .size()
-        .reset_index(name="Stations")
-        .sort_values("Stations", ascending=False)
-    )
+leaders = state_network.loc[
+    state_network.groupby("state")["Stations"].idxmax()
+]
 
-    fig_states = px.bar(
-        state_counts.head(15),
-        x="state",
-        y="Stations",
-        text="Stations",
-        color="Stations",
-        color_continuous_scale="Greens"
-    )
+fig_leaders = px.bar(
+    leaders.sort_values("Stations", ascending=False).head(15),
+    x="state",
+    y="Stations",
+    text="Stations",
+    color="ev network"
+)
 
-    st.plotly_chart(fig_states, use_container_width=True)
+st.plotly_chart(fig_leaders, use_container_width=True)
 
 st.divider()
 
 # -------------------------------------------------
-# STATE MARKET LEADER
+# EXPANSION OPPORTUNITY SIGNAL
 # -------------------------------------------------
-st.header("Market Leader by State")
+st.header("Expansion Opportunity Signal")
 
-if "state" in df.columns and "ev network" in df.columns:
+state_totals = (
+    df.groupby("state")
+    .size()
+    .reset_index(name="Stations")
+)
 
-    state_network = (
-        df.groupby(["state", "ev network"])
-        .size()
-        .reset_index(name="Stations")
-    )
+median_density = state_totals["Stations"].median()
 
-    leaders = state_network.loc[
-        state_network.groupby("state")["Stations"].idxmax()
-    ]
+state_totals["Below Median Density"] = state_totals["Stations"] < median_density
 
-    fig_leader = px.bar(
-        leaders.sort_values("Stations", ascending=False).head(15),
-        x="state",
-        y="Stations",
-        text="Stations",
-        color="ev network"
-    )
+fig_opportunity = px.bar(
+    state_totals.sort_values("Stations").head(15),
+    x="state",
+    y="Stations",
+    color="Below Median Density"
+)
 
-    st.plotly_chart(fig_leader, use_container_width=True)
-
-st.divider()
-
-# -------------------------------------------------
-# MAP
-# -------------------------------------------------
-st.header("Geographic Distribution")
-
-if "latitude" in df.columns and "longitude" in df.columns:
-
-    fig_map = px.scatter_mapbox(
-        df.sample(min(len(df), 5000)),  # performance safety
-        lat="latitude",
-        lon="longitude",
-        color="ev network" if "ev network" in df.columns else None,
-        zoom=3,
-        height=600
-    )
-
-    fig_map.update_layout(mapbox_style="carto-positron")
-
-    st.plotly_chart(fig_map, use_container_width=True)
-
-st.divider()
-
-# -------------------------------------------------
-# STATE DRILLDOWN
-# -------------------------------------------------
-st.header("State Drilldown")
-
-if "state" in df.columns:
-
-    selected_state = st.selectbox(
-        "Select State",
-        sorted(df["state"].dropna().unique())
-    )
-
-    state_df = df[df["state"] == selected_state]
-
-    st.metric(
-        f"Stations in {selected_state}",
-        f"{len(state_df):,}"
-    )
+st.plotly_chart(fig_opportunity, use_container_width=True)
