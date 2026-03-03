@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import pydeck as pdk
 
 # -----------------------------
 # PAGE CONFIG (Public-friendly)
@@ -32,18 +33,16 @@ DATA_URL = (
 @st.cache_data(ttl=3600)
 def load_data(url: str) -> pd.DataFrame:
     df = pd.read_csv(url)
-    # Normalize column names
     df.columns = df.columns.str.strip().str.lower().str.replace(" ", "_")
     return df
 
 df = load_data(DATA_URL)
 
-# Helper: safely get a column if it exists, else create it
 def ensure_col(name: str, default=None):
     if name not in df.columns:
         df[name] = default
 
-# Columns we may use (create if missing so app never crashes)
+# Ensure columns exist (avoid crashes)
 ensure_col("state", "")
 ensure_col("city", "")
 ensure_col("station_name", "")
@@ -56,18 +55,16 @@ ensure_col("ev_level2_evse_num", 0)
 ensure_col("ev_dc_fast_count", 0)
 ensure_col("latitude", None)
 ensure_col("longitude", None)
-ensure_col("ev_connector_types", "")
-ensure_col("ev_pricing", "")
 
-# Make numeric columns numeric (important for charts)
+# Numeric conversions
 for col in ["ev_level1_evse_num", "ev_level2_evse_num", "ev_dc_fast_count"]:
     df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0).astype(int)
 
-# Clean up state values
 df["state"] = df["state"].astype(str).str.strip().str.upper()
+df["ev_network"] = df["ev_network"].fillna("Unknown").astype(str).replace({"": "Unknown"})
 
 # -----------------------------
-# SIDEBAR FILTERS (Public-friendly)
+# SIDEBAR FILTERS
 # -----------------------------
 st.sidebar.header("Filters")
 
@@ -89,7 +86,7 @@ access_filter = st.sidebar.selectbox(
 
 network_filter = st.sidebar.selectbox(
     "Network (optional)",
-    options=["All"] + sorted(df["ev_network"].fillna("Unknown").astype(str).unique().tolist()),
+    options=["All"] + sorted(df["ev_network"].unique().tolist()),
     index=0,
     help="Filter to a specific charging network if you want.",
 )
@@ -103,7 +100,6 @@ filtered = df.copy()
 if selected_states:
     filtered = filtered[filtered["state"].isin(selected_states)]
 
-# Access classification (simple, public-friendly)
 access_code = filtered["access_code"].astype(str).str.lower()
 groups_access = filtered["groups_with_access_code"].astype(str).str.lower()
 
@@ -119,37 +115,26 @@ if network_filter != "All":
     filtered = filtered[filtered["ev_network"].astype(str) == network_filter]
 
 # -----------------------------
-# TOP KPI ROW (Make it “understandable”)
+# KPI ROW
 # -----------------------------
 total_stations = len(filtered)
 states_covered = filtered["state"].nunique()
 
-# Ports (not stations): sum of EVSE counts
 level2_ports = int(filtered["ev_level2_evse_num"].sum())
 dc_fast_ports = int(filtered["ev_dc_fast_count"].sum())
-
-# Avoid divide-by-zero
 total_ports = max(level2_ports + dc_fast_ports, 1)
 dc_share = round((dc_fast_ports / total_ports) * 100, 1)
 
-col1, col2, col3, col4 = st.columns(4)
-col1.metric("Stations", f"{total_stations:,}", help="Station sites (locations).")
-col2.metric("States covered", f"{states_covered}", help="How many states appear in this filtered view.")
-col3.metric(
-    "Everyday chargers (Level 2 ports)",
-    f"{level2_ports:,}",
-    help="Slower chargers used at destinations (work, shopping, home).",
-)
-col4.metric(
-    "Road-trip fast chargers (DC Fast ports)",
-    f"{dc_fast_ports:,}",
-    help="Fast chargers often used on highways and quick stops.",
-)
+c1, c2, c3, c4 = st.columns(4)
+c1.metric("Stations", f"{total_stations:,}")
+c2.metric("States covered", f"{states_covered}")
+c3.metric("Everyday chargers (Level 2 ports)", f"{level2_ports:,}")
+c4.metric("Road-trip fast chargers (DC Fast ports)", f"{dc_fast_ports:,}")
 
 st.divider()
 
 # -----------------------------
-# SECTION 1: Fast vs Everyday (Public story)
+# SECTION 1: Power mix
 # -----------------------------
 st.subheader("⚡ How fast is the charging network?")
 st.write(
@@ -169,14 +154,14 @@ fig_mix.update_layout(height=420, yaxis_title="Ports", xaxis_title="")
 st.plotly_chart(fig_mix, use_container_width=True)
 
 st.info(
-    f"**Insight:** In this view, about **{dc_share}%** of ports are fast chargers. "
+    f"**Plain-English insight:** In this view, about **{dc_share}%** of ports are fast chargers. "
     "Higher fast-charger share typically signals stronger road-trip / corridor coverage."
 )
 
 st.divider()
 
 # -----------------------------
-# SECTION 2: Top states (clear, sortable)
+# SECTION 2: Top states
 # -----------------------------
 st.subheader("🏁 Where is infrastructure most concentrated?")
 state_counts = (
@@ -199,7 +184,7 @@ st.plotly_chart(fig_states, use_container_width=True)
 st.divider()
 
 # -----------------------------
-# SECTION 3: Explore a state
+# SECTION 3: State drilldown
 # -----------------------------
 st.subheader("🔎 Explore one state")
 
@@ -216,10 +201,10 @@ else:
     ports_total = max(lvl2 + dcfc, 1)
     state_dc_share = round((dcfc / ports_total) * 100, 1)
 
-    c1, c2, c3 = st.columns(3)
-    c1.metric("Everyday chargers (Level 2 ports)", f"{lvl2:,}")
-    c2.metric("Fast chargers (DC Fast ports)", f"{dcfc:,}")
-    c3.metric("Fast-charger share", f"{state_dc_share}%", help="Fast ports / (fast + level 2 ports)")
+    sc1, sc2, sc3 = st.columns(3)
+    sc1.metric("Everyday chargers (Level 2 ports)", f"{lvl2:,}")
+    sc2.metric("Fast chargers (DC Fast ports)", f"{dcfc:,}")
+    sc3.metric("Fast-charger share", f"{state_dc_share}%")
 
     st.subheader("🏢 Network landscape (top providers in this state)")
     network_counts = (
@@ -238,14 +223,13 @@ else:
     st.plotly_chart(fig_net, use_container_width=True)
 
     # -----------------------------
-    # MAP (Antarctica-proof)
+    # MAP (PyDeck - smoother + more interactive)
     # -----------------------------
     if show_map:
-        st.subheader("🗺️ Map of station locations")
+        st.subheader("🗺️ Map of station locations (interactive)")
 
         map_df = state_df.copy()
 
-        # Force numeric coordinates
         map_df["latitude"] = pd.to_numeric(map_df["latitude"], errors="coerce")
         map_df["longitude"] = pd.to_numeric(map_df["longitude"], errors="coerce")
         map_df = map_df.dropna(subset=["latitude", "longitude"])
@@ -253,59 +237,65 @@ else:
         if map_df.empty:
             st.warning("No valid coordinates available for this selection.")
         else:
-            # Detect obvious swap (lat should be ~10..72; lon should be ~-170..-50 for US)
-            lat_med = float(map_df["latitude"].median())
-            lon_med = float(map_df["longitude"].median())
-
-            looks_swapped = (-170 <= lat_med <= -50) and (10 <= lon_med <= 72)
-            if looks_swapped:
-                map_df = map_df.rename(columns={"latitude": "lon_tmp", "longitude": "latitude"})
-                map_df = map_df.rename(columns={"lon_tmp": "longitude"})
-
-            # Hard filter to US-ish bounds so we never end up in Antarctica
             map_df = map_df[
-                map_df["latitude"].between(10, 72)
-                & map_df["longitude"].between(-170, -50)
+                map_df["latitude"].between(10, 72) &
+                map_df["longitude"].between(-170, -50)
             ]
 
-            # Public-friendly default: Contiguous US
             contiguous_only = st.checkbox("Show contiguous U.S. only (recommended)", value=True)
             if contiguous_only:
                 map_df = map_df[
-                    map_df["latitude"].between(24, 50)
-                    & map_df["longitude"].between(-125, -66)
+                    map_df["latitude"].between(24, 50) &
+                    map_df["longitude"].between(-125, -66)
                 ]
 
             if map_df.empty:
                 st.warning("After cleaning coordinates, no points remain. Try widening filters.")
             else:
-                # Keep map fast
-                map_df = map_df.sample(min(len(map_df), 5000), random_state=42)
+                map_df = map_df.sample(min(len(map_df), 8000), random_state=42)
 
-                # Center map on data
                 center_lat = float(map_df["latitude"].median())
                 center_lon = float(map_df["longitude"].median())
 
-                fig_map = px.scatter_mapbox(
-                    map_df,
-                    lat="latitude",
-                    lon="longitude",
-                    hover_name="station_name",
-                    hover_data={"city": True, "state": True, "ev_network": True},
-                    zoom=3.3,
-                    height=600,
+                layer = pdk.Layer(
+                    "ScatterplotLayer",
+                    data=map_df,
+                    get_position="[longitude, latitude]",
+                    get_radius=180,
+                    pickable=True,
+                    auto_highlight=True,
+                    get_fill_color=[78, 121, 167, 140],
                 )
-                fig_map.update_layout(
-                    mapbox_style="open-street-map",
-                    mapbox_center={"lat": center_lat, "lon": center_lon},
-                    margin={"r": 0, "t": 0, "l": 0, "b": 0},
+
+                tooltip = {
+                    "html": """
+                        <b>{station_name}</b><br/>
+                        {city}, {state}<br/>
+                        Network: {ev_network}
+                    """,
+                    "style": {"backgroundColor": "rgba(10,10,10,0.85)", "color": "white"},
+                }
+
+                view_state = pdk.ViewState(
+                    latitude=center_lat,
+                    longitude=center_lon,
+                    zoom=6,
+                    pitch=0,
                 )
-                st.plotly_chart(fig_map, use_container_width=True)
+
+                deck = pdk.Deck(
+                    layers=[layer],
+                    initial_view_state=view_state,
+                    tooltip=tooltip,
+                    map_style="mapbox://styles/mapbox/light-v10",
+                )
+
+                st.pydeck_chart(deck, use_container_width=True)
 
 st.divider()
 
 # -----------------------------
-# SECTION 4: Download + transparency
+# SECTION 4: Download
 # -----------------------------
 st.subheader("📥 Download (for transparency)")
 st.write("Want to explore the raw data behind the charts? Download the filtered dataset below.")
