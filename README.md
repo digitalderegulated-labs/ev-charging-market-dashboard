@@ -1,27 +1,37 @@
-# EV Charging Network Competitive Intelligence Platform
+# ⚡ US EV Charging Infrastructure Dashboard
 
-Live App: https://ev-charging-market-dashboard.streamlit.app/
+**Live dashboard:** https://ev-charging-market-dashboard.streamlit.app/
 
-## What this is
-A live competitive intelligence dashboard for U.S. EV charging networks using federal infrastructure data from the DOE/NREL AFDC API.
+This project pulls **live EV charging infrastructure data** from the U.S. Department of Energy’s **AFDC (NREL) API** and turns it into a clean, public-friendly dashboard.
 
-## What it delivers
-- Network market share (stations)
-- Market concentration (HHI)
-- DC Fast strategy by network (when port fields are available)
-- State-level market leaders and dominance
-- Geographic footprint mapping
-- Whitespace heuristic to flag expansion targets
+## What it shows (in plain English)
 
-## Why it matters
-This turns public infrastructure data into actionable competitive insight for:
-- charging network expansion teams
-- utility partnership / corridor planning
-- market entry & benchmarking
-- investment prioritization
+- **Stations:** how many charging locations exist
+- **Everyday chargers (Level 2):** best for longer stops (work/shopping/home)
+- **Road-trip fast chargers (DC Fast):** best for quick top-ups on the go
+- **Top states by infrastructure**
+- **Network landscape** (top providers by station count)
+- **Interactive map** of locations (optional)
+- **Downloadable filtered dataset**
 
-## Tech
-Python • Streamlit • Pandas • Plotly • NREL/AFDC API
+## Why it’s useful
 
-## Security
-API key stored in Streamlit Secrets (`NREL_API_KEY`), not in GitHub.
+This dashboard is designed to be understandable for the **general public**, while still demonstrating real-world skills in:
+- live API data pipelines
+- data cleaning + resilience (no-crash handling)
+- interactive visualization
+- dashboard UX and storytelling
+
+## Tech stack
+
+- Python
+- Streamlit
+- Pandas
+- Plotly
+- AFDC / NREL API
+
+## Running locally
+
+1) Install dependencies:
+```bash
+pip install -r requirements.txt
