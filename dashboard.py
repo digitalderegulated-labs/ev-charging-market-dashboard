@@ -12,7 +12,10 @@ st.set_page_config(
 )
 
 st.title("⚡ US EV Charging Infrastructure Dashboard")
-st.caption("Live data from the U.S. Department of Energy AFDC (NREL). Built for public clarity + portfolio credibility.")
+st.caption(
+    "Live data from the U.S. Department of Energy AFDC (NREL). "
+    "Built for public clarity + portfolio credibility."
+)
 
 # -----------------------------
 # API + DATA LOADING
@@ -69,27 +72,26 @@ df["state"] = df["state"].astype(str).str.strip().str.upper()
 st.sidebar.header("Filters")
 
 all_states = sorted([s for s in df["state"].dropna().unique() if s and s != "NAN"])
-default_states = all_states  # default = all states
 
 selected_states = st.sidebar.multiselect(
     "Choose states (optional)",
     options=all_states,
     default=[],
-    help="Leave empty to show the entire U.S."
+    help="Leave empty to show the entire U.S.",
 )
 
 access_filter = st.sidebar.selectbox(
     "Access type",
     options=["All", "Public", "Private"],
     index=0,
-    help="Public vs private station access (based on AFDC fields)."
+    help="Public vs private station access (based on AFDC fields).",
 )
 
 network_filter = st.sidebar.selectbox(
     "Network (optional)",
     options=["All"] + sorted(df["ev_network"].fillna("Unknown").astype(str).unique().tolist()),
     index=0,
-    help="Filter to a specific charging network if you want."
+    help="Filter to a specific charging network if you want.",
 )
 
 show_map = st.sidebar.checkbox("Show map", value=True)
@@ -102,9 +104,6 @@ if selected_states:
     filtered = filtered[filtered["state"].isin(selected_states)]
 
 # Access classification (simple, public-friendly)
-# AFDC uses access_code and groups_with_access_code; we’ll interpret broadly:
-# - Public if access_code contains "public" OR groups_with_access_code contains "public"
-# - Private if it contains "private"
 access_code = filtered["access_code"].astype(str).str.lower()
 groups_access = filtered["groups_with_access_code"].astype(str).str.lower()
 
@@ -136,8 +135,16 @@ dc_share = round((dc_fast_ports / total_ports) * 100, 1)
 col1, col2, col3, col4 = st.columns(4)
 col1.metric("Stations", f"{total_stations:,}", help="Station sites (locations).")
 col2.metric("States covered", f"{states_covered}", help="How many states appear in this filtered view.")
-col3.metric("Everyday chargers (Level 2 ports)", f"{level2_ports:,}", help="Slower chargers used at destinations (work, shopping, home).")
-col4.metric("Road-trip fast chargers (DC Fast ports)", f"{dc_fast_ports:,}", help="Fast chargers often used on highways and quick stops.")
+col3.metric(
+    "Everyday chargers (Level 2 ports)",
+    f"{level2_ports:,}",
+    help="Slower chargers used at destinations (work, shopping, home).",
+)
+col4.metric(
+    "Road-trip fast chargers (DC Fast ports)",
+    f"{dc_fast_ports:,}",
+    help="Fast chargers often used on highways and quick stops.",
+)
 
 st.divider()
 
@@ -145,19 +152,19 @@ st.divider()
 # SECTION 1: Fast vs Everyday (Public story)
 # -----------------------------
 st.subheader("⚡ How fast is the charging network?")
-st.write("**Everyday chargers** (Level 2) are best for longer stops. **Fast chargers** (DC Fast) support quicker top-ups—more road-trip friendly.")
-
-mix_df = pd.DataFrame({
-    "Charger speed": ["Everyday chargers (Level 2)", "Road-trip fast chargers (DC Fast)"],
-    "Ports": [level2_ports, dc_fast_ports]
-})
-
-fig_mix = px.bar(
-    mix_df,
-    x="Charger speed",
-    y="Ports",
-    text="Ports"
+st.write(
+    "**Everyday chargers** (Level 2) are best for longer stops. "
+    "**Fast chargers** (DC Fast) support quicker top-ups—more road-trip friendly."
 )
+
+mix_df = pd.DataFrame(
+    {
+        "Charger speed": ["Everyday chargers (Level 2)", "Road-trip fast chargers (DC Fast)"],
+        "Ports": [level2_ports, dc_fast_ports],
+    }
+)
+
+fig_mix = px.bar(mix_df, x="Charger speed", y="Ports", text="Ports")
 fig_mix.update_layout(height=420, yaxis_title="Ports", xaxis_title="")
 st.plotly_chart(fig_mix, use_container_width=True)
 
@@ -172,14 +179,19 @@ st.divider()
 # SECTION 2: Top states (clear, sortable)
 # -----------------------------
 st.subheader("🏁 Where is infrastructure most concentrated?")
-state_counts = filtered.groupby("state").size().reset_index(name="Stations").sort_values("Stations", ascending=False)
+state_counts = (
+    filtered.groupby("state")
+    .size()
+    .reset_index(name="Stations")
+    .sort_values("Stations", ascending=False)
+)
 
 fig_states = px.bar(
     state_counts.head(top_n_states),
     x="state",
     y="Stations",
     text="Stations",
-    title=f"Top {top_n_states} states by station count"
+    title=f"Top {top_n_states} states by station count",
 )
 fig_states.update_layout(height=450, xaxis_title="State", yaxis_title="Stations")
 st.plotly_chart(fig_states, use_container_width=True)
@@ -187,10 +199,11 @@ st.plotly_chart(fig_states, use_container_width=True)
 st.divider()
 
 # -----------------------------
-# SECTION 3: Explore a state (simple)
+# SECTION 3: Explore a state
 # -----------------------------
 st.subheader("🔎 Explore one state")
-if states_covered == 0:
+
+if filtered["state"].nunique() == 0:
     st.warning("No data matches your filters. Try clearing filters in the sidebar.")
 else:
     state_choice = st.selectbox("Choose a state", options=sorted(filtered["state"].unique().tolist()))
@@ -198,7 +211,6 @@ else:
 
     st.metric(f"Stations in {state_choice}", f"{len(state_df):,}")
 
-    # Build a clean breakdown without crashing if columns are missing
     lvl2 = int(state_df["ev_level2_evse_num"].sum())
     dcfc = int(state_df["ev_dc_fast_count"].sum())
     ports_total = max(lvl2 + dcfc, 1)
@@ -209,7 +221,6 @@ else:
     c2.metric("Fast chargers (DC Fast ports)", f"{dcfc:,}")
     c3.metric("Fast-charger share", f"{state_dc_share}%", help="Fast ports / (fast + level 2 ports)")
 
-    # Network landscape (top 10)
     st.subheader("🏢 Network landscape (top providers in this state)")
     network_counts = (
         state_df["ev_network"]
@@ -226,45 +237,85 @@ else:
     fig_net.update_layout(height=420, xaxis_title="", yaxis_title="Stations")
     st.plotly_chart(fig_net, use_container_width=True)
 
-    # Optional map (only if lat/lon exist)
+    # -----------------------------
+    # MAP (Antarctica-proof)
+    # -----------------------------
     if show_map:
-        map_df = state_df.dropna(subset=["latitude", "longitude"]).copy()
-        if len(map_df) == 0:
-            st.warning("No map coordinates available for this selection.")
+        st.subheader("🗺️ Map of station locations")
+
+        map_df = state_df.copy()
+
+        # Force numeric coordinates
+        map_df["latitude"] = pd.to_numeric(map_df["latitude"], errors="coerce")
+        map_df["longitude"] = pd.to_numeric(map_df["longitude"], errors="coerce")
+        map_df = map_df.dropna(subset=["latitude", "longitude"])
+
+        if map_df.empty:
+            st.warning("No valid coordinates available for this selection.")
         else:
-            st.subheader("🗺️ Map of station locations")
-            map_df["latitude"] = pd.to_numeric(map_df["latitude"], errors="coerce")
-            map_df["longitude"] = pd.to_numeric(map_df["longitude"], errors="coerce")
-            map_df = map_df.dropna(subset=["latitude", "longitude"])
+            # Detect obvious swap (lat should be ~10..72; lon should be ~-170..-50 for US)
+            lat_med = float(map_df["latitude"].median())
+            lon_med = float(map_df["longitude"].median())
 
-            # Keep map snappy: limit points
-            map_df = map_df.head(5000)
+            looks_swapped = (-170 <= lat_med <= -50) and (10 <= lon_med <= 72)
+            if looks_swapped:
+                map_df = map_df.rename(columns={"latitude": "lon_tmp", "longitude": "latitude"})
+                map_df = map_df.rename(columns={"lon_tmp": "longitude"})
 
-            fig_map = px.scatter_mapbox(
-                map_df,
-                lat="latitude",
-                lon="longitude",
-                hover_name="station_name",
-                hover_data={"city": True, "state": True, "ev_network": True, "latitude": False, "longitude": False},
-                zoom=4,
-                height=550
-            )
-            fig_map.update_layout(mapbox_style="open-street-map", margin={"r":0,"t":0,"l":0,"b":0})
-            st.plotly_chart(fig_map, use_container_width=True)
+            # Hard filter to US-ish bounds so we never end up in Antarctica
+            map_df = map_df[
+                map_df["latitude"].between(10, 72)
+                & map_df["longitude"].between(-170, -50)
+            ]
+
+            # Public-friendly default: Contiguous US
+            contiguous_only = st.checkbox("Show contiguous U.S. only (recommended)", value=True)
+            if contiguous_only:
+                map_df = map_df[
+                    map_df["latitude"].between(24, 50)
+                    & map_df["longitude"].between(-125, -66)
+                ]
+
+            if map_df.empty:
+                st.warning("After cleaning coordinates, no points remain. Try widening filters.")
+            else:
+                # Keep map fast
+                map_df = map_df.sample(min(len(map_df), 5000), random_state=42)
+
+                # Center map on data
+                center_lat = float(map_df["latitude"].median())
+                center_lon = float(map_df["longitude"].median())
+
+                fig_map = px.scatter_mapbox(
+                    map_df,
+                    lat="latitude",
+                    lon="longitude",
+                    hover_name="station_name",
+                    hover_data={"city": True, "state": True, "ev_network": True},
+                    zoom=3.3,
+                    height=600,
+                )
+                fig_map.update_layout(
+                    mapbox_style="open-street-map",
+                    mapbox_center={"lat": center_lat, "lon": center_lon},
+                    margin={"r": 0, "t": 0, "l": 0, "b": 0},
+                )
+                st.plotly_chart(fig_map, use_container_width=True)
 
 st.divider()
 
 # -----------------------------
-# SECTION 4: Download + transparency (portfolio polish)
+# SECTION 4: Download + transparency
 # -----------------------------
 st.subheader("📥 Download (for transparency)")
 st.write("Want to explore the raw data behind the charts? Download the filtered dataset below.")
-download_df = filtered.copy()
+
 st.download_button(
     "Download filtered data as CSV",
-    data=download_df.to_csv(index=False).encode("utf-8"),
+    data=filtered.to_csv(index=False).encode("utf-8"),
     file_name="ev_charging_filtered.csv",
-    mime="text/csv"
+    mime="text/csv",
 )
 
-st.caption("Data source: AFDC Alternative Fuel Stations API (NREL). Updated live; cached for performance.")
+st.markdown("---")
+st.caption("Built by Digital Deregulated Labs • Live federal infrastructure data via AFDC (NREL) API")
