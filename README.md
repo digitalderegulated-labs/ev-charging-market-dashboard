@@ -1,44 +1,51 @@
-# ⚡ US EV Charging Infrastructure Dashboard
+# ⚡ US EV Charging Infrastructure Intelligence Dashboard
 
-**Live dashboard:** https://ev-charging-market-dashboard.streamlit.app/
+🔗 **Live Dashboard:**  
+https://ev-charging-market-dashboard.streamlit.app/
 
-This project pulls **live EV charging infrastructure data** from the U.S. Department of Energy’s **AFDC (NREL) API** and turns it into a clean, public-friendly dashboard.
+This dashboard pulls **live EV charging infrastructure data** from the U.S. Department of Energy’s **AFDC (NREL) API** and turns it into an interactive, public-facing analytics product.
 
-## What it shows (in plain English)
-
-- **Stations:** how many charging locations exist
-- **Everyday chargers (Level 2):** best for longer stops (work/shopping/home)
-- **Road-trip fast chargers (DC Fast):** best for quick top-ups on the go
-- **Top states by infrastructure**
-- **Network landscape** (top providers by station count)
-- **Interactive map** of locations (optional)
-- **Downloadable filtered dataset**
-
-## Why it’s useful
-
-This dashboard is designed to be understandable for the **general public**, while still demonstrating real-world skills in:
-- live API data pipelines
-- data cleaning + resilience (no-crash handling)
-- interactive visualization
-- dashboard UX and storytelling
-
-## Tech stack
-
-- Python
-- Streamlit
-- Pandas
-- Plotly
-- AFDC / NREL API
-
-## Running locally
-
-1) Install dependencies:
-```bash
-pip install -r requirements.txt
+It demonstrates how raw federal infrastructure data can be **fetched via API**, **cleaned**, **modeled**, and **visualized** into actionable market insight.
 
 ---
 
-## Data Source
+## What it shows (in plain English)
 
-AFDC Alternative Fuel Stations API (NREL):  
-https://developer.nrel.gov/
+- **Total EV charging locations (US)** and how widely distributed they are across states
+- **Top states** by charging infrastructure concentration
+- **Charging power mix** (Level 2 vs DC Fast) to understand “everyday charging” vs “road-trip charging”
+- **Network landscape** (top providers by station count)
+- **State drill-down** for quick “market snapshot” by state
+- **Map view** (optional) for geographic distribution
+- **Downloadable dataset** based on your current filters
+
+---
+
+## Why it’s useful
+
+This dashboard is designed to be understandable to the general public *while still demonstrating real-world technical and analytical skills*:
+
+- Live API data ingestion (federal infrastructure dataset)
+- Data cleaning + schema normalization (consistent column handling)
+- Interactive exploration and filtering (market segmentation by state/network/access/type)
+- Insight-oriented visualization and storytelling (not just charts)
+- Production deployment on Streamlit Community Cloud
+
+---
+
+## Tech Stack
+
+- **Python**
+- **Streamlit**
+- **Pandas**
+- **Plotly**
+- **AFDC / NREL Alternative Fuel Stations API**
+
+---
+
+## Running locally
+
+### 1) Clone the repo
+```bash
+git clone https://github.com/digitalderegulated-labs/ev-charging-market-dashboard.git
+cd ev-charging-market-dashboard
