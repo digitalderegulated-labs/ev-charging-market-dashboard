@@ -1,6 +1,6 @@
 # Digital Deregulated Labs – Operational Intelligence Dashboards
 
-This repository contains a working dashboard built as part of my Digital Deregulated Labs portfolio.
+This repository contains a working dashboard built as part of Digital Deregulated Labs portfolio.
 
 The goal of these projects is to demonstrate how complex operational data can be translated into clear,
 decision-friendly dashboards for both technical users and non-experts.
