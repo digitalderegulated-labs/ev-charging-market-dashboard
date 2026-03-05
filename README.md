@@ -10,84 +10,47 @@ These dashboards include short "Insights" sections that explain what the data me
 Note: These insights are examples of how an analyst might interpret the data. They are included for educational
 and demonstration purposes and should not be considered formal operational guidance.
 
-# ⚡ US EV Charging Infrastructure Intelligence Dashboard  
-### A Digital Deregulated Labs Project
+# EV Charging Market Dashboard
 
-🔗 **Live Application:**  
-https://ev-charging-market-dashboard.streamlit.app/
+Live App:
+https://digitalderegulated-labs-ev-charging-market-dashboard.streamlit.app
 
-An interactive analytics dashboard built on live U.S. EV charging infrastructure data from the U.S. Department of Energy’s AFDC (NREL) Alternative Fuel Stations API.
+## Overview
 
-This project demonstrates how public infrastructure data can be ingested, normalized, and transformed into a clean, deployable analytics product.
+The EV charging market is expanding rapidly, but infrastructure visibility is often fragmented.
 
----
+This dashboard uses public AFDC charging station data to visualize how charging
+networks are expanding across the United States.
 
-## Built for
+The goal is to provide a simple view of charging infrastructure growth.
 
-- EV charging developers evaluating expansion markets and infrastructure density
-- Energy suppliers and utilities targeting EV load growth
-- Analysts benchmarking charging network footprint by state and city
+## Key Features
 
----
+Charging station map
 
-## What the dashboard provides
+Network growth indicators
 
-- National EV charging station count
-- Infrastructure concentration by state
-- Charging speed mix (Level 2 vs DC Fast)
-- Network landscape (top providers + market share)
-- City concentration (top cities by station count)
-- Downloadable filtered dataset (transparency + further analysis)
+Regional infrastructure coverage
 
----
+Station density analysis
 
-## Why this project matters
+## Example Insights
 
-This dashboard reflects real-world implementation skills:
+Signal  
+Fast-charging infrastructure is concentrated in urban corridors.
 
-- Live API integration (federal infrastructure dataset)
-- Data cleaning and schema normalization
-- Interactive filtering and drilldown views
-- Insight-focused visualization (not just charts)
-- Production deployment with secure configuration management
+Implication  
+Rural coverage gaps may slow EV adoption in certain regions.
 
-It demonstrates the ability to transform public data into decision-ready infrastructure intelligence.
+Next Step  
+Infrastructure developers may prioritize new installations in underserved areas.
 
----
+## Data Sources
 
-## Technology Stack
+U.S. Department of Energy  
+Alternative Fuels Data Center (AFDC)
 
-- Python
-- Streamlit
-- Pandas
-- Plotly
-- Streamlit Community Cloud (deployment)
+## Purpose
 
----
-
-## Data Source
-
-AFDC Alternative Fuel Stations API (NREL)  
-https://developer.nrel.gov/
-
----
-
-## Project Structure
-
-- `dashboard.py` – main application logic
-- `requirements.txt` – dependency configuration
-- `.streamlit/config.toml` – UI theme configuration (optional)
-
----
-
-## About Digital Deregulated Labs
-
-Digital Deregulated Labs focuses on building analytics tools and infrastructure intelligence platforms across technology, energy, and healthcare.
-
-This dashboard serves as a live demonstration of applied data engineering and energy market analytics.
-
----
-
-## License
-
-MIT
+This dashboard demonstrates how public infrastructure data can be translated
+into actionable insights for planners, investors, and policymakers.
